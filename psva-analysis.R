@@ -23,7 +23,7 @@ psva_data= read.csv( file="/Users/sabhabib/research/PSVA/data/main/pilot3/summar
 
 
 # linear regression as each pid has only one column
-model_lm<-lm(review_relevance~gender+review_valence+emotion+age+review_valence*gender
+model_lm<-lm(voice_attractiveness~gender+review_valence+emotion+age+review_valence*gender
              +review_valence*emotion+emotion*age+age*gender+review_valence*age+emotion*gender
                , data=psva_data, REML= FALSE)
 anova(model_lm)

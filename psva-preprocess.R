@@ -19,7 +19,7 @@ pilot_data= read.csv(file="/Users/sabhabib/research/PSVA/data/main/pilot3/pilot3
 filtered=dplyr::select(pilot_data,contains("PID"), contains("condition"), contains("list.audios")
                        , contains("V2"),contains("SV"),contains("PUPENJ"),contains("DIS"),contains("V_AGE")
                        ,contains("EMO"),contains("D1"),contains("D2"),contains("D3")
-                       ,contains("D4"))
+                       ,contains("D4"),contains("D5"),contains("D6"))
 write.csv(filtered,"/Users/sabhabib/research/PSVA/data/main/pilot3/primary-filter.csv", row.names = FALSE)
 
 #Preprocess review questions from list
@@ -139,12 +139,14 @@ configs<-configs_pilot1
 
 # code for preparing summary data
 participants<-33
-summary_data<-setNames(data.frame(matrix(ncol = 20, nrow =participants)), c("pid","gender", "review_valence","emotion",
+summary_data<-setNames(data.frame(matrix(ncol = 26, nrow =participants)), c("pid","gender", "review_valence","emotion",
                                                                 "age","review_purchase_likelihood", "review_trust","review_relevance",
                                                                 "review_perceived_usefulness", "va_perceived_trust", "va_persuasiveness",
                                                                 "va_perceived_usefulness", "va_perceived_enjoyment", "voice_persuasiveness",
                                                                 "voice_attitude_toward", "voice_attractiveness","perceived_emotion","perceived_age"
-                                                                ,"perceived_age_difference","disposition_trust"))
+                                                                ,"perceived_age_difference","disposition_trust","participant_gender"
+                                                                ,"participant_age","participant_education","participant_race"
+                                                                ,"participant_income","participant_employment"))
 
 for(i in 1:participants){
   condition <- as.numeric(filtered[i,2])
@@ -188,6 +190,14 @@ for(i in 1:participants){
   summary_data$perceived_age[i]<-filtered$V_AGE[i]
   summary_data$perceived_age_difference[i]<-filtered$V_AGEDIFF[i]
   
+  # populate participant gender,age,education, race, income,employment
+  summary_data$participant_gender[i]<-filtered$D1[i]
+  summary_data$participant_age[i]<-filtered$D2[i]
+  summary_data$participant_education[i]<-filtered$D3[i]
+  summary_data$participant_race[i]<-filtered$D4[i]
+  summary_data$participant_income[i]<-filtered$D5[i]
+  summary_data$participant_employment[i]<-filtered$D6[i]
+  
   # calculate disposition to trust
   summary_data$disposition_trust[i]<-(filtered$DIS_1[i]+filtered$DIS_2[i]+filtered$DIS_3[i]+filtered$DIS_5[i])/4
   
@@ -212,7 +222,37 @@ summary_data$review_valence[summary_data$review_valence=="p"]<-"positive"
 summary_data$review_valence[summary_data$review_valence=="n"]<-"negative"
 summary_data$gender[summary_data$gender=="f"]<-"female"
 summary_data$gender[summary_data$gender=="m"]<-"male"
+summary_data$participant_gender[summary_data$participant_gender=="1"]<-"Female"
+summary_data$participant_gender[summary_data$participant_gender=="2"]<-"Male"
+summary_data$participant_gender[summary_data$participant_gender=="3"]<-"Non-binary"
+summary_data$participant_gender[summary_data$participant_gender=="4"]<-"Other"
+summary_data$participant_education[summary_data$participant_education=="1"]<-"No high school"
+summary_data$participant_education[summary_data$participant_education=="2"]<-"High School degree or equivalent"
+summary_data$participant_education[summary_data$participant_education=="3"]<-"Some College"
+summary_data$participant_education[summary_data$participant_education=="4"]<-"Two-year degree"
+summary_data$participant_education[summary_data$participant_education=="5"]<-"Four-year degree"
+summary_data$participant_education[summary_data$participant_education=="6"]<-"Graduate degree"
+summary_data$participant_race[summary_data$participant_race=="1"]<-"Hispanic or Latino"
+summary_data$participant_race[summary_data$participant_race=="2"]<-"American Indian or Alaska Native"
+summary_data$participant_race[summary_data$participant_race=="3"]<-"Asian"
+summary_data$participant_race[summary_data$participant_race=="4"]<-"Black or African American"
+summary_data$participant_race[summary_data$participant_race=="5"]<-"Native Hawaiian or Other Pacific Islander"
+summary_data$participant_race[summary_data$participant_race=="6"]<-"White"
+summary_data$participant_race[summary_data$participant_race=="7"]<-"Other"
+summary_data$participant_employment[summary_data$participant_employment=="1"]<-"Full time"
+summary_data$participant_employment[summary_data$participant_employment=="2"]<-"Part time"
+summary_data$participant_employment[summary_data$participant_employment=="3"]<-"Unemployed- looking for work"
+summary_data$participant_employment[summary_data$participant_employment=="4"]<-"Unemployed- not looking for work"
+summary_data$participant_employment[summary_data$participant_employment=="5"]<-"Retired"
+summary_data$participant_employment[summary_data$participant_employment=="6"]<-"Student"
+summary_data$participant_employment[summary_data$participant_employment=="7"]<-"Other"
+summary_data$participant_income[summary_data$participant_income=="1"]<-"Below 25,000"
+summary_data$participant_income[summary_data$participant_income=="2"]<-"25,000-49,999"
+summary_data$participant_income[summary_data$participant_income=="3"]<-"50,000-99,999"
+summary_data$participant_income[summary_data$participant_income=="4"]<-"100,000-199,999"
+summary_data$participant_income[summary_data$participant_income=="5"]<-"200,000 or above"
+
 # write to csv
-write.csv(summary_data,"/Users/sabhabib/research/PSVA/data/main/pilot3/summary_data.csv", row.names = FALSE)
+write.csv(summary_data,"/Users/sabhabib/research/PSVA/data/main/pilot3/summary_data_participant.csv", row.names = FALSE)
 
 
