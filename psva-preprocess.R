@@ -35,8 +35,8 @@ review_ind<-0
 
 # separating review data with order of q1 to q6 for each participant. Q_serial is for keeping 
 # track of question serials/order as the participants came across
-
-for(i in 1:33){
+participants<-33
+for(i in 1:participants){
   file_list=unlist(strsplit(toString(filtered[i,3]),","))
   attention=0
   # calculate attention score for reviews. 8 iterations for 8 questions
@@ -90,7 +90,41 @@ for(i in 1:33){
 # write attentive data to a file
 write.csv(attentive_data,"/Users/sabhabib/research/PSVA/data/main/pilot3/attentive_data.csv", row.names = FALSE)
 
+###########################Prepare data for product chronbach alpha###############
+product_data<-setNames(data.frame(matrix(ncol = 8, nrow = participants*6)), c("pid","question","prod1","prod2","prod3","prod4"
+                                                                ,"prod5","prod6"))
+index<-0
+for(i in 1:participants){
+  
+  #skip if attention check failed
+  if (attentive_data[i,2]!=0){
+    next
+  }
+  index=index+1
+  for(j in 1:6){
+    product_data$pid[(index-1)*6+j]<-review_data$pid[(index-1)*6+j]
+    ques<-paste("q",j, sep = "")
+    product_data$question[(index-1)*6+j]<-ques
+    for(k in 1:6){
+      product_data[(index-1)*6+k,2+(as.integer(floor((review_data$stimulus[(index-1)*6+j]-1)/16)))+1]<-review_data[(index-1)*6+j,3+k]
+    }
+    
+  }
+  
+}
+product_data<-product_data[!is.na(product_data$pid),]
+###########################
+
 ##calculate chronbachs alpha
+##products
+prod1=product_data$prod1
+prod2=product_data$prod2
+prod3=product_data$prod3
+prod4=product_data$prod4
+prod5=product_data$prod5
+prod6=product_data$prod6
+products=data.frame(prod1,prod2,prod3,prod4,prod5,prod6)
+alpha(products, check.keys=TRUE)
 #Review: Perceived usefulness
 pu_rv4=review_data$q4
 pu_rv5=review_data$q5

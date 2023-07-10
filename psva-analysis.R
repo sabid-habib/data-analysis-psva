@@ -23,9 +23,43 @@ psva_data= read.csv( file="/Users/sabhabib/research/PSVA/data/main/pilot3/summar
 
 
 # linear regression as each pid has only one column
-model_lm<-lm(voice_attractiveness~gender+review_valence+emotion+age+review_valence*gender
+model_lm<-lm(va_perceived_trust~gender+review_valence+emotion+age+review_valence*gender
              +review_valence*emotion+emotion*age+age*gender+review_valence*age+emotion*gender
                , data=psva_data, REML= FALSE)
+
+####################Residual vs fitted plot###################
+residuals_plot <- ggplot(data = psva_data, aes(x = fitted(model_lm), y = resid(model_lm))) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed") +
+  labs(x = "Fitted Values", y = "Residuals") +
+  ggtitle("Residuals vs Fitted Values") +
+  theme_minimal()
+
+
+print(residuals_plot)
+
+####################Residual vs fitted plot (method 2)###################
+res <- resid(model_lm)
+plot(density(res)) # plot density to see if normally distributed
+#produce residual vs. fitted plot
+plot(fitted(model_lm), res)
+
+#add a horizontal line at 0 
+abline(0,0)
+#############################Breusch-Pegan test#################################
+# Perform Breusch-Pagan test to check for homoscedasticity
+bp_test <- ncvTest(model_lm)
+print(bp_test)
+##################################Shapiro-wilk test##########################
+shapiro.test(rstandard(model_lm))
+################################Q-Q plot##################################
+ggplot() +
+  geom_qq(aes(sample = rstandard(model_lm))) +
+  geom_abline(color = "red") +
+  coord_fixed()
+
+########################################################################################
+
 anova(model_lm)
 plot_model(model_lm, type = "pred", terms = c( "review_valence","emotion","gender"))
 
