@@ -15,12 +15,12 @@ library(abind)
 #install.packages("abind")
 library("psych")
 
-pilot_data= read.csv(file="/Users/sabhabib/research/PSVA/data/main/pilot3/pilot3-raw.csv", stringsAsFactors = FALSE)
+pilot_data= read.csv(file="/Users/sabhabib/research/PSVA/data/main/final2/final4-raw.csv", stringsAsFactors = FALSE)
 filtered=dplyr::select(pilot_data,contains("PID"), contains("condition"), contains("list.audios")
                        , contains("V2"),contains("SV"),contains("PUPENJ"),contains("DIS"),contains("V_AGE")
                        ,contains("EMO"),contains("D1"),contains("D2"),contains("D3")
-                       ,contains("D4"),contains("D5"),contains("D6"))
-write.csv(filtered,"/Users/sabhabib/research/PSVA/data/main/pilot3/primary-filter.csv", row.names = FALSE)
+                       ,contains("D4"),contains("D5"),contains("D6"),contains("QUAL1"),contains("QUAL4"),)
+write.csv(filtered,"/Users/sabhabib/research/PSVA/data/main/final2/primary-filter-v4.csv", row.names = FALSE)
 
 #Preprocess review questions from list
 # review_data dataframe is for separately keeping track of review questions. 
@@ -35,7 +35,7 @@ review_ind<-0
 
 # separating review data with order of q1 to q6 for each participant. Q_serial is for keeping 
 # track of question serials/order as the participants came across
-participants<-33
+participants<-350
 for(i in 1:participants){
   file_list=unlist(strsplit(toString(filtered[i,3]),","))
   attention=0
@@ -65,7 +65,6 @@ for(i in 1:participants){
     attention=attention+1
   }
   
-  
   attentive_data[i,1]<-i
   attentive_data[i,2]<-attention
   if(attention>0){
@@ -88,7 +87,7 @@ for(i in 1:participants){
 }
 
 # write attentive data to a file
-write.csv(attentive_data,"/Users/sabhabib/research/PSVA/data/main/pilot3/attentive_data.csv", row.names = FALSE)
+write.csv(attentive_data,"/Users/sabhabib/research/PSVA/data/main/final2/attentive_data.csv", row.names = FALSE)
 
 ###########################Prepare data for product chronbach alpha###############
 product_data<-setNames(data.frame(matrix(ncol = 8, nrow = participants*6)), c("pid","question","prod1","prod2","prod3","prod4"
@@ -171,22 +170,22 @@ configs_pilot1= read.csv( file="/Users/sabhabib/research/PSVA/data/main/pilot2/f
 # use later for combining config symbols
 configs<-configs_pilot1
 
-# code for preparing summary data
-participants<-33
-summary_data<-setNames(data.frame(matrix(ncol = 26, nrow =participants)), c("pid","gender", "review_valence","emotion",
+
+summary_data<-setNames(data.frame(matrix(ncol = 29, nrow =participants)), c("pid","gender", "review_valence","emotion",
                                                                 "age","review_purchase_likelihood", "review_trust","review_relevance",
                                                                 "review_perceived_usefulness", "va_perceived_trust", "va_persuasiveness",
                                                                 "va_perceived_usefulness", "va_perceived_enjoyment", "voice_persuasiveness",
                                                                 "voice_attitude_toward", "voice_attractiveness","perceived_emotion","perceived_age"
                                                                 ,"perceived_age_difference","disposition_trust","participant_gender"
                                                                 ,"participant_age","participant_education","participant_race"
-                                                                ,"participant_income","participant_employment"))
-
+                                                                ,"participant_income","participant_employment","participant_age_diff","qual1","qual4"))
+p<-0
 for(i in 1:participants){
   condition <- as.numeric(filtered[i,2])
   
   #skip if attention check failed
   if (attentive_data[i,2]!=0){
+    p<-p+1
     next
   }
   # entry pid
@@ -232,10 +231,29 @@ for(i in 1:participants){
   summary_data$participant_income[i]<-filtered$D5[i]
   summary_data$participant_employment[i]<-filtered$D6[i]
   
+  #qual responses
+  summary_data$qual1[i]<-filtered$QUAL1[i]
+  summary_data$qual4[i]<-filtered$QUAL4[i]
+  
   # calculate disposition to trust
   summary_data$disposition_trust[i]<-(filtered$DIS_1[i]+filtered$DIS_2[i]+filtered$DIS_3[i]+filtered$DIS_5[i])/4
   
-  
+  # calculate participant age difference. i.e., diff or not
+  voice_age<-filtered$V_AGE[i]
+  part_age<-filtered$D2[i]
+  if(voice_age=='y'){
+    if(part_age<40){
+      summary_data$participant_age_diff[i]<- 'same age'
+    } else{
+      summary_data$participant_age_diff[i]<- 'different age'
+    }
+  }else{
+    if(part_age>=40 && part_age<65){
+      summary_data$participant_age_diff[i]<- 'same age'
+    } else{
+      summary_data$participant_age_diff[i]<- 'different age'
+    }
+  }
 }
 test<-summary_data
 # get rid of the NA column
@@ -260,6 +278,9 @@ summary_data$participant_gender[summary_data$participant_gender=="1"]<-"Female"
 summary_data$participant_gender[summary_data$participant_gender=="2"]<-"Male"
 summary_data$participant_gender[summary_data$participant_gender=="3"]<-"Non-binary"
 summary_data$participant_gender[summary_data$participant_gender=="4"]<-"Other"
+summary_data$participant_age[summary_data$participant_age<40]<-"18-39"
+summary_data$participant_age[summary_data$participant_age>=40 & summary_data$participant_age<60]<-"40-59"
+summary_data$participant_age[summary_data$participant_age>=60 ]<-"60+"
 summary_data$participant_education[summary_data$participant_education=="1"]<-"No high school"
 summary_data$participant_education[summary_data$participant_education=="2"]<-"High School degree or equivalent"
 summary_data$participant_education[summary_data$participant_education=="3"]<-"Some College"
@@ -287,6 +308,5 @@ summary_data$participant_income[summary_data$participant_income=="4"]<-"100,000-
 summary_data$participant_income[summary_data$participant_income=="5"]<-"200,000 or above"
 
 # write to csv
-write.csv(summary_data,"/Users/sabhabib/research/PSVA/data/main/pilot3/summary_data_participant.csv", row.names = FALSE)
-
+write.csv(summary_data,"/Users/sabhabib/research/PSVA/data/main/final2/summary_data_participant_v6.csv", row.names = FALSE)
 
